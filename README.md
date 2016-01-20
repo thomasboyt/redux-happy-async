@@ -21,7 +21,7 @@ const State = I.Record({
 });
 
 const myReducer = createImmutableReducer(new State(), {
-  [LOAD_TODOS]: createAsyncReducer({
+  ...createAsyncReducer({
     type: LOAD_TODOS,
 
     onSuccess: ({todos}, state) => {
