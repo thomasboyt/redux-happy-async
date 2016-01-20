@@ -1,7 +1,7 @@
 {
   "name": "redux-happy-async",
   "version": "0.0.1",
-  "description": "",
+  "description": "async state with less boilerplate",
   "main": "lib/index.js",
   "files": [
     "lib",
