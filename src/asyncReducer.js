@@ -1,4 +1,4 @@
-import I from 'immutable';
+import AsyncState from './AsyncState';
 
 function noop(action, state) {
   return state;
@@ -10,30 +10,6 @@ export const ACTION_START = 'START';
 export const ACTION_SUCCESS = 'SUCCESS';
 export const ACTION_ERROR = 'ERROR';
 export const ACTION_RESET = 'RESET';
-
-const AsyncState = I.Record({
-  loaded: false,
-  loading: null,
-  error: null,
-});
-
-export function getAsyncState(reducerState, type, id) {
-  let path;
-
-  if (id !== undefined) {
-    path = ['async', type, id];
-  } else {
-    path = ['async', type];
-  }
-
-  const state = reducerState.getIn(path);
-
-  if (!state) {
-    return new AsyncState();
-  }
-
-  return state;
-}
 
 /*
  * actionType - an actionType
