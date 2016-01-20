@@ -1,0 +1,14 @@
+{
+  "name": "redux-happy-async",
+  "version": "0.0.1",
+  "description": "",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "author": "Thomas Boyt <me@thomasboyt.com>",
+  "license": "MIT",
+  "dependencies": {
+    "immutable": "^3.7.6"
+  }
+}
