@@ -108,7 +108,7 @@ export default connect(select)(TodosList);
 
 You can also create further abstractions, look in `example/` for some.
 
-### Unique Key
+#### Using Unique Keys
 
 Of course, in some cases, your application may have multiple inflight actions of the same type. For example, imagine a todo list with a "complete" action that saves to a very, very slow server. You might click the "complete" checkbox for multiple items at once, and need to separately track the state of each item's "complete" action.
 
