@@ -8,6 +8,10 @@ Assumes you're using an [Immutable](https://facebook.github.io/immutable-js/) ma
 
 Basically this adds an `async` field to your reducer's state that contains async state per action you define using `createAsyncReducer`.
 
+### Example
+
+https://github.com/thomasboyt/earthling-github-issues
+
 ### Usage
 
 So your reducer might look something like this:
