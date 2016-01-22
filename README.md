@@ -1,6 +1,6 @@
 # redux-happy-async
 
-**(this repo isn't ready for usage yet)**
+**(this library isn't tested, battle-tested, or recommended for usage yet!)**
 
 Tries to cut some of the more obnoxious boilerplate out of handling async state in Redux.
 
