@@ -1,8 +1,24 @@
+/*
+ * This example shows how to create a generic, reusable action creator with redux-happy-async.
+ *
+ * An example action creator built on this might look like:
+ *
+ *   export function getUser(username) {
+ *     return async function(dispatch) {
+ *       await getJson(`https://api.github.com/users/${username}`, {
+ *         dispatch,
+ *         type: GET_USER,
+ *         payload: {username},
+ *       });
+ *     };
+ *   }
+ */
+
 import {
   ACTION_START,
   ACTION_SUCCESS,
   ACTION_ERROR,
-} from './asyncReducer';
+} from 'redux-happy-async';
 
 export default async function getJson(url, {dispatch, type, payload}) {
   dispatch({
