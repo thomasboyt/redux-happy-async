@@ -4,9 +4,7 @@
 
 Tries to cut some of the more obnoxious boilerplate out of handling async state in Redux.
 
-Assumes you're using an [Immutable](https://facebook.github.io/immutable-js/) map as reducer state.
-
-Basically this adds an `async` field to your reducer's state that contains async state per action you define using `createAsyncReducer`.
+Basically, this adds an `async` reducer to your store's state that contains async state per action.
 
 ### Example
 
@@ -14,25 +12,36 @@ https://github.com/thomasboyt/earthling-github-issues
 
 ### Usage
 
-So your reducer might look something like this:
+First, add the async reducer and middleware to your Redux store:
 
 ```js
-import {createAsyncReducer} from 'redux-happy-async';
+import {createStore, combineReducers, applyMiddleware} from 'redux';
+import {asyncReducer, asyncMiddleware} from 'redux-happy-async';
 
+// thunk middleware is optional, but used in below examples
+const createStoreWithMiddleware = applyMiddleware(thunkMiddleware, asyncMiddleware)(createStore);
+
+const store = createStoreWithMiddleware(combineReducers({
+  async: asyncReducer,
+  // ...
+}));
+```
+
+Then, your reducer might look something like this:
+
+```js
 const State = I.Record({
-  async: null,
   todos: null,
 });
 
-const myReducer = createImmutableReducer(new State(), {
-  ...createAsyncReducer({
-    type: LOAD_TODOS,
-
-    onSuccess: ({todos}, state) => {
-      return state.set('todos', todos);
-    }
+export default function todoReducer(state=new State(), action) {
+  switch (action.type) {
+    case LOAD_TODOS:
+      return state.set('todos', action.todos);
+    default:
+      return state;
   }
-});
+}
 ```
 
 You could create an action that looked like:
@@ -44,7 +53,7 @@ export function getTodos() {
   return async function(dispatch) {
     dispatch({
       type: LOAD_TODOS,
-      status: ACTION_START
+      asyncStatus: ACTION_START
     });
 
     const resp = await window.fetch(/*...*/);
@@ -54,7 +63,7 @@ export function getTodos() {
 
       dispatch({
         type: LOAD_TODOS,
-        status: ACTION_ERROR,
+        asyncStatus: ACTION_ERROR,
         error: err,
       });
     }
@@ -63,7 +72,7 @@ export function getTodos() {
 
     dispatch({
       type: LOAD_TODOS,
-      status: ACTION_SUCCESS,
+      asyncStatus: ACTION_SUCCESS,
       todos: data
     });
   };
@@ -99,7 +108,7 @@ const TodosList = React.createClass({
 function select(state) {
   return {
     todos: state.todos.todos,
-    loadingState: getAsyncState(state.todos, LOAD_TODOS)
+    loadingState: getAsyncState(state, LOAD_TODOS)
   };
 }
 
@@ -108,11 +117,11 @@ export default connect(select)(TodosList);
 
 You can also create further abstractions, look in `example/` for some.
 
-#### Using Unique Keys
+#### Using Unique IDs
 
 Of course, in some cases, your application may have multiple inflight actions of the same type. For example, imagine a todo list with a "complete" action that saves to a very, very slow server. You might click the "complete" checkbox for multiple items at once, and need to separately track the state of each item's "complete" action.
 
-In that case, you'll want to set a "unique key" that the async reducer will read from the action payload. For example, given a "complete todo" action:
+In that case, you'll want to set a `uniqueId` on the action payload that the async reducer will use to determine which state to update. For example, given a "complete todo" action:
 
 ```js
 import {ACTION_START, ACTION_SUCCESS, ACTION_ERROR} from 'redux-happy-async';
@@ -122,10 +131,10 @@ export function completeTodo(todoId) {
   return async function(dispatch) {
     dispatch({
       type: COMPLETE_TODO,
-      status: ACTION_START,
+      asyncStatus: ACTION_START,
 
       // we pass todoId here since it is the "unique key" for this action
-      todoId,
+      uniqueId: todoId,
     });
 
     const resp = await window.fetch(/*...*/);
@@ -135,16 +144,16 @@ export function completeTodo(todoId) {
 
       dispatch({
         type: COMPLETE_TODO,
-        status: ACTION_ERROR,
-        todoId,
+        asyncStatus: ACTION_ERROR,
+        uniqueId: todoId,
         error: err,
       });
     }
 
     dispatch({
       type: COMPLETE_TODO,
-      status: ACTION_SUCCESS,
-      todoId,
+      asyncStatus: ACTION_SUCCESS,
+      uniqueId: todoId,
     });
   };
 }
@@ -153,26 +162,20 @@ export function completeTodo(todoId) {
 And this reducer:
 
 ```js
-import {createAsyncReducer} from 'redux-happy-async';
-import {COMPLETE_TODO} from '../ActionTypes';
-
 const State = I.Record({
-  async: null,
   todos: null,
 });
 
-const todosReducer = createImmutableReducer(new State(), {
-  ...createAsyncReducer({
-    type: COMPLETE_TODO,
-
-    // this is the key that will be read from the action payload to get the unique ID
-    uniqueKey: 'todoId',
-
-    onSuccess: ({todoId}, state) => {
-      return state.setIn(['todos', id, 'completed'], true);
-    }
+export default function todoReducer(state=new State(), action) {
+  switch (action.type) {
+    case LOAD_TODOS:
+      return state.set('todos', I.Map(action.todos.map((todo) => [todo.id, I.Map(todo)])));
+    case COMPLETE_TODO:
+      return state.setIn(['todos', action.id, 'complete'], true);
+    default:
+      return state;
   }
-});
+}
 ```
 
 You could create an individual todo component that displays the async state of its complete action:
@@ -234,7 +237,7 @@ function select(state, props) {
     todo: state.todos.todos.get(todoId),
 
     // Note the third argument to getAsyncState!
-    completeAsyncState: getAsyncState(state.todos, COMPLETE_TODO, todoId)
+    completeAsyncState: getAsyncState(state, COMPLETE_TODO, todoId)
   };
 }
 

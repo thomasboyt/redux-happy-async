@@ -1,4 +1,4 @@
-import createAsyncReducer, {
+import asyncReducer, {
   ACTION_START,
   ACTION_SUCCESS,
   ACTION_ERROR,
@@ -7,11 +7,14 @@ import createAsyncReducer, {
 
 import getAsyncState from './getAsyncState';
 
+import asyncMiddleware from './asyncMiddleware';
+
 export {
-  createAsyncReducer,
+  asyncReducer,
+  getAsyncState,
+  asyncMiddleware,
   ACTION_START,
   ACTION_SUCCESS,
   ACTION_ERROR,
   ACTION_RESET,
-  getAsyncState,
 };

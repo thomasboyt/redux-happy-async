@@ -1,114 +1,72 @@
+import I from 'immutable';
 import AsyncState from './AsyncState';
-
-function noop(action, state) {
-  return state;
-}
-
-const types = {};
 
 export const ACTION_START = 'START';
 export const ACTION_SUCCESS = 'SUCCESS';
 export const ACTION_ERROR = 'ERROR';
 export const ACTION_RESET = 'RESET';
+export const ASYNC_UPDATE = 'ASYNC_UPDATE';
 
-/*
- * actionType - an actionType
- * onStart, onSuccess, onError (all optional) - called with (action, state) after async state is set
- *
- * uniqueKey (optional) -
- *   used to maintain multiple states under the same namespace.
- *   so, e.g. if you had 5 todos that had a "complete" action that need to have separately tracked
- *   state, you would set uniqueKey to something like `todoId`, and then pass that as a key in your
- *   action payload. then the cancel todo's async action state would be available under
- *   `['cancelTodoState', todoId, 'loading|error']`.
- *
- *   without this, it's assumed only one instance of this async action is going at once
- */
-export default function createAsyncReducer({type, onStart, onSuccess, onError, uniqueKey}) {
+const initialState = I.Map();
 
-  // Prevent creating multiple reducers with the same action type, since this breaks the reset system
-  if (types[type]) {
-    throw new Error(`Cannot create duplicate async reducer for action ${type}`);
+function getKeyPath(action) {
+  if (action.uniqueId !== undefined) {
+    const id = action.uniqueId;
+    return [action.type, id];
   }
 
-  types[type] = true;
+  return [action.type];
+}
 
-  onStart = onStart || noop;
-  onSuccess = onSuccess || noop;
-  onError = onError || noop;
+function updateAsyncState(action, state) {
+  const keyPath = getKeyPath(action);
 
-  function getKeyPath(action) {
-    if (uniqueKey) {
-      let id;
-      if (typeof uniqueKey === 'function') {
-        id = uniqueKey(action);
-      } else {
-        id = action[uniqueKey];
-      }
+  if (action.asyncStatus === ACTION_START) {
+    return state.setIn(keyPath, new AsyncState({
+      loading: true,
+    }));
 
-      if (id === undefined) {
-        throw new Error(`Could not get unique id ${uniqueKey} for async reducer for ${action.type}, did you pass it?`);
-      }
-
-      return ['async', type, id];
+  } else if (action.asyncStatus === ACTION_ERROR) {
+    if (!action.error) {
+      throw new Error(`${action.type} was triggered with an error status but no \`error\` field was passed`);
     }
 
-    return ['async', type];
+    return state
+      .setIn([...keyPath, 'loading'], false)
+      .setIn([...keyPath, 'loaded'], false)
+      .setIn([...keyPath, 'error'], action.error);
+
+  } else if (action.asyncStatus === ACTION_SUCCESS) {
+    return state
+      .setIn([...keyPath, 'loading'], false)
+      .setIn([...keyPath, 'loaded'], true)
+      .setIn([...keyPath, 'error'], null);
+
+  } else if (action.asyncStatus === ACTION_RESET) {
+    if (action.all === true) {
+      // reset all action states for this type
+      return state.updateIn([action.type], (states) => states.map((actionState) =>
+        actionState
+          .set('loading', false)
+          .set('loaded', false)
+          .set('error', null)
+      ));
+    }
+
+    return state
+      .setIn([...keyPath, 'loading'], false)
+      .setIn([...keyPath, 'loaded'], false)
+      .setIn([...keyPath, 'error'], null);
   }
 
-  return {
-    [type]: function(action, state) {
-      if (!action.status) {
-        throw new Error(`Async action ${action.type} requires status field to be passed`);
-      }
+  throw new Error(`Async action ${action.type} triggered with unknown status ${action.status}`);
+}
 
-      const keyPath = getKeyPath(action);
-
-      if (action.status === ACTION_START) {
-        const newState = state.setIn(keyPath, new AsyncState({
-          loading: true,
-        }));
-
-        return onStart(action, newState);
-
-      } else if (action.status === ACTION_ERROR) {
-        if (!action.error) {
-          throw new Error(`${action.type} was triggered with an error status but no error was passed`);
-        }
-
-        const newState = state
-          .setIn([...keyPath, 'loading'], false)
-          .setIn([...keyPath, 'loaded'], false)
-          .setIn([...keyPath, 'error'], action.error);
-
-        return onError(action, newState);
-
-      } else if (action.status === ACTION_SUCCESS) {
-        const newState = state
-          .setIn([...keyPath, 'loading'], false)
-          .setIn([...keyPath, 'loaded'], true)
-          .setIn([...keyPath, 'error'], null);
-
-        return onSuccess(action, newState);
-
-      } else if (action.status === ACTION_RESET) {
-        if (action.all === true) {
-          // reset all action states for this type
-          return state.updateIn(['async', type], (states) => states.map((actionState) =>
-            actionState
-              .set('loading', false)
-              .set('loaded', false)
-              .set('error', null)
-          ));
-        }
-
-        return state
-          .setIn([...keyPath, 'loading'], false)
-          .setIn([...keyPath, 'loaded'], false)
-          .setIn([...keyPath, 'error'], null);
-      }
-
-      throw new Error(`Async action ${action.type} triggered with unknown status ${action.status}`);
-    },
-  };
+export default function asyncReducer(state=initialState, action) {
+  switch (action.type) {
+    case ASYNC_UPDATE:
+      return updateAsyncState(action.originalAction, state);
+    default:
+      return state;
+  }
 }

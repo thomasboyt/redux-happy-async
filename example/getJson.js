@@ -22,7 +22,7 @@ import {
 
 export default async function getJson(url, {dispatch, type, payload}) {
   dispatch({
-    status: ACTION_START,
+    asyncStatus: ACTION_START,
     type,
     ...payload
   });
@@ -40,7 +40,7 @@ export default async function getJson(url, {dispatch, type, payload}) {
     }
 
     dispatch({
-      status: ACTION_ERROR,
+      asyncStatus: ACTION_ERROR,
       type,
       error,
       ...payload
@@ -51,7 +51,7 @@ export default async function getJson(url, {dispatch, type, payload}) {
   const responseJson = await resp.json();
 
   dispatch({
-    status: ACTION_SUCCESS,
+    asyncStatus: ACTION_SUCCESS,
     type,
     resp: responseJson,
     ...payload,

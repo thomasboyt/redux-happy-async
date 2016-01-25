@@ -1,19 +1,19 @@
 import AsyncState from './AsyncState';
 
-export default function getAsyncState(reducerState, type, id) {
+export default function getAsyncState(state, type, id) {
   let path;
 
   if (id !== undefined) {
-    path = ['async', type, id];
+    path = [type, id];
   } else {
-    path = ['async', type];
+    path = [type];
   }
 
-  const state = reducerState.getIn(path);
+  const asyncState = state.async.getIn(path);
 
-  if (!state) {
+  if (!asyncState) {
     return new AsyncState();
   }
 
-  return state;
+  return asyncState;
 }
