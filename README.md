@@ -6,11 +6,17 @@ Tries to cut some of the more obnoxious boilerplate out of handling async state 
 
 Basically, this adds an `async` reducer to your store's state that contains async state per action.
 
-### Example
+## Why?
+
+Managing async action state in Redux is a very, very common topic of discussion. The classical way to do it is to create three action types (for start, error, and success), and then create boilerplate to set loading/error states for each action inside a reducer. This boilerplate adds up fast if you're creating an app with lots of async actions!
+
+redux-happy-async abstracts over this pattern and keeps this boilerplate out of your reducers. To do this, it adds an `async` reducer to that tracks action states which your components can read from.
+
+## Example
 
 https://github.com/thomasboyt/earthling-github-issues/tree/async-rewrite
 
-### Usage
+## Usage
 
 First, add the async reducer and middleware to your Redux store:
 
@@ -55,6 +61,8 @@ export function getTodos() {
   return async function(dispatch) {
     dispatch({
       type: LOAD_TODOS,
+      // This special `asyncStatus` field is read by the async middleware
+      // to update the async reducer
       asyncStatus: ACTION_START
     });
 
@@ -110,6 +118,7 @@ const TodosList = React.createClass({
 function select(state) {
   return {
     todos: state.todos.todos,
+    // returns an object of shape {loading: true/false, error: obj/null}
     loadingState: getAsyncState(state, LOAD_TODOS)
   };
 }
@@ -119,7 +128,7 @@ export default connect(select)(TodosList);
 
 You can also create further abstractions, look in `example/` for some.
 
-#### Using Unique IDs
+### Using Unique IDs
 
 Of course, in some cases, your application may have multiple inflight actions of the same type. For example, imagine a todo list with a "complete" action that saves to a very, very slow server. You might click the "complete" checkbox for multiple items at once, and need to separately track the state of each item's "complete" action.
 
