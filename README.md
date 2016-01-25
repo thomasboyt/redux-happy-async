@@ -37,6 +37,8 @@ const State = I.Record({
 export default function todoReducer(state=new State(), action) {
   switch (action.type) {
     case LOAD_TODOS:
+      // This action is only actually received by the reducer if `asyncStatus: ACTION_START` is part
+      // of the payload!
       return state.set('todos', action.todos);
     default:
       return state;
