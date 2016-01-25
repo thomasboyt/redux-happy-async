@@ -267,3 +267,7 @@ export default connect(select)(TodosList);
 ### `getAsyncState(state, actionType, [id])`
 
 Returns an object of form `{loading, error}` representing the current state.
+
+### `resetAction(type, {all, uniqueId})`
+
+Action creator that will reset action state for a given action type.

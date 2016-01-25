@@ -45,12 +45,19 @@ function updateAsyncState(action, state) {
   } else if (action.asyncStatus === ACTION_RESET) {
     if (action.all === true) {
       // reset all action states for this type
-      return state.updateIn([action.type], (states) => states.map((actionState) =>
-        actionState
-          .set('loading', false)
-          .set('loaded', false)
-          .set('error', null)
-      ));
+      const states = state.get(action.type);
+
+      if (states) {
+        return state.set(action.type, states.map((actionState) =>
+          actionState
+            .set('loading', false)
+            .set('loaded', false)
+            .set('error', null)
+        ));
+
+      } else {
+        return state;
+      }
     }
 
     return state

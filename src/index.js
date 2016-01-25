@@ -2,12 +2,10 @@ import asyncReducer, {
   ACTION_START,
   ACTION_SUCCESS,
   ACTION_ERROR,
-  ACTION_RESET,
 } from './asyncReducer';
-
 import getAsyncState from './getAsyncState';
-
 import asyncMiddleware from './asyncMiddleware';
+import resetAction from './resetAction';
 
 export {
   asyncReducer,
@@ -16,5 +14,5 @@ export {
   ACTION_START,
   ACTION_SUCCESS,
   ACTION_ERROR,
-  ACTION_RESET,
+  resetAction,
 };
