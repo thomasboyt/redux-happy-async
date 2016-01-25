@@ -8,7 +8,7 @@ Basically, this adds an `async` reducer to your store's state that contains asyn
 
 ### Example
 
-https://github.com/thomasboyt/earthling-github-issues
+https://github.com/thomasboyt/earthling-github-issues/tree/async-rewrite
 
 ### Usage
 
