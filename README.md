@@ -33,7 +33,7 @@ const store = createStoreWithMiddleware(combineReducers({
 }));
 ```
 
-Then, your reducer might look something like this:
+Then, write your reducer like normal. Note that any async actions you have will only reach your reducer if the `ACTION_SUCCESS` status is part of the payload. In the below example, the reducer is only called with `{type: LOAD_TODOS}` once the todos have successfully been loaded:
 
 ```js
 const State = I.Record({
@@ -43,7 +43,7 @@ const State = I.Record({
 export default function todoReducer(state=new State(), action) {
   switch (action.type) {
     case LOAD_TODOS:
-      // This action is only actually received by the reducer if `asyncStatus: ACTION_START` is part
+      // This action is only actually received by the reducer if `asyncStatus: ACTION_SUCCESS` is part
       // of the payload!
       return state.set('todos', action.todos);
     default:
@@ -52,7 +52,7 @@ export default function todoReducer(state=new State(), action) {
 }
 ```
 
-You could create an action that looked like:
+Then, create an action creator that uses the `asyncStatus` fields in its payloads.
 
 ```js
 import {ACTION_START, ACTION_SUCCESS, ACTION_ERROR} from 'redux-happy-async';
@@ -74,6 +74,7 @@ export function getTodos() {
       dispatch({
         type: LOAD_TODOS,
         asyncStatus: ACTION_ERROR,
+        // This field is set on the action's async state as `error`
         error: err,
       });
     }
