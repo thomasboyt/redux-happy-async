@@ -214,7 +214,7 @@ const Todo = React.createClass({
 
     if (completeAsyncState.error) {
       return (
-        <span>error completing. <a onClick={this.handleComplete}>retry?</a>
+        <span>error completing. <a onClick={this.handleComplete}>retry?</a></span>
       );
     } else if (completeAsyncState.loading) {
       return (
