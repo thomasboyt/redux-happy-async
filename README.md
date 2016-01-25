@@ -254,3 +254,15 @@ function select(state, props) {
 
 export default connect(select)(TodosList);
 ```
+
+## API
+
+### Action payload fields
+
+* `asyncStatus`: one of `ACTION_START`, `ACTION_SUCCESS`, or `ACTION_ERROR`. Setting this field is what tells the async middleware to handle this action as an async action.
+* `error`: an error that will be set on the async state object (see below). This can be whatever you want as long as your component knows how to consume it (e.g. an error response from your API, a string respresentation of an error...).
+* `uniqueId`: the unique ID used to track multiple inflight actions of the same type.
+
+### `getAsyncState(state, actionType, [id])`
+
+Returns an object of form `{loading, error}` representing the current state.
