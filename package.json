@@ -4,12 +4,11 @@
   "description": "async state with less boilerplate",
   "main": "lib/index.js",
   "files": [
-    "lib",
-    "src"
+    "lib"
   ],
   "scripts": {
     "test": "mocha --no-color --compilers js:babel-register src/**/*.spec.js",
-    "build": "babel src --out-dir lib",
+    "build": "rimraf lib && babel src --out-dir lib --ignore *.spec.js",
     "prepublish": "npm run build"
   },
   "author": "Thomas Boyt <me@thomasboyt.com>",
@@ -28,6 +27,7 @@
     "eslint": "^1.10.3",
     "expect": "^1.13.4",
     "mocha": "^2.3.4",
-    "redux": "^3.0.6"
+    "redux": "^3.0.6",
+    "rimraf": "^2.5.1"
   }
 }
