@@ -3,18 +3,21 @@ import {
   ACTION_SUCCESS,
 } from './asyncReducer';
 
-export default function asyncMiddleware(store) {
+export default function asyncMiddleware() {
   return (next) => {
     return (action) => {
       if (action.asyncStatus) {
-        store.dispatch({
+        let res;
+        if (action.asyncStatus === ACTION_SUCCESS) {
+          res = next(action);
+        }
+
+        next({
           type: ASYNC_UPDATE,
           originalAction: action,
         });
 
-        if (action.asyncStatus === ACTION_SUCCESS) {
-          return next(action);
-        }
+        return res;
 
       } else {
         return next(action);
